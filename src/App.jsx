@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 function App() {
+  const [query, setQuery] = useState("");
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="p-6 rounded-lg shadow bg-white">
