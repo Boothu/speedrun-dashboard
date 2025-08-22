@@ -7,6 +7,16 @@ function App() {
   // Make a state variable 'query' and a setter 'setQuery'
   // Calling 'setQuery(...)' updates 'query' and tells React to re-render the UI
   const [query, setQuery] = useState("");
+
+  // Holds the array of results from the API
+  const [games, setGames] = useState([]);
+
+  // Will be true while waiting for the server
+  const [loading, setLoading] = useState(false);
+
+  // Set to error message if something goes wrong
+  const [error, setError] = useState("");
+
   return (
     <main className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Speedrun Records Dashboard</h1>
