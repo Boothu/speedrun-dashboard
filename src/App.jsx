@@ -17,6 +17,48 @@ function App() {
   // Set to error message if something goes wrong
   const [error, setError] = useState("");
 
+  // Fetch games from speedrun.com based on current 'query'
+  async function handleSearch() {
+    const q = query.trim();
+    // If nothing is entered return early
+    if (!q) return;
+
+    setLoading(true);
+    // Clear anything that may remain from previous searches
+    setError("");
+    setGames([]);
+
+    try {
+      // Use entered query ('q') in search using the API
+      // 'encodeURIComponent' handles spaces and special characters
+      // Limit to 10 results
+      const url = `https://www.speedrun.com/api/v1/games?name=${encodeURIComponent(q)}&max=10`;
+
+      // Make request to API
+      const response = await fetch(url);
+
+      // Throw error if request unsuccessful
+      if (!response.ok) {
+        throw new Error(response.status);
+      }
+
+      // Get response data in JSON form
+      const json = await response.json();
+
+      // Speedrun.com returns the list under 'data'
+      const results = json.data;
+
+      // Update games array
+      setGames(results);
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't fetch games. Try a different search.");
+      // Stop loading as search has finished
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Speedrun Records Dashboard</h1>
