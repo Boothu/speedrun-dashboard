@@ -50,6 +50,7 @@ function App() {
 
       // Update games array
       setGames(results);
+      console.log(games)
     } catch (e) {
       console.error(e);
       setError("Couldn't fetch games. Try a different search.");
@@ -72,16 +73,11 @@ function App() {
           onChange={(e) => setQuery(e.target.value)}
         />
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={() => {
-            const trimmed = query.trim();
-            // If nothing is entered return early
-            if (!trimmed) return;
-            // Placeholder for now
-            console.log("Searching for:", trimmed);
-          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60"
+          onClick={handleSearch}
+          disabled={loading}
         >
-          Search
+          {loading ? "Searching..." : "Search"}
         </button>
       </div>
     </main>
