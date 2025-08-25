@@ -20,6 +20,9 @@ function App() {
   // Track if a search has been performed
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Track game selected from list generated after search
+  const [selectedGame, setSelectedGame] = useState(null);
+
   // Fetch games from speedrun.com based on current 'query'
   async function handleSearch() {
     const q = query.trim();
@@ -104,11 +107,16 @@ function App() {
       <ul className="space-y-2">
         {/* Map each game in the games array to its own box showing name and release date */}
         {games.map((game) => (
-          <li key={game.id} className="p-3 border rounded">
-            <div className="font-medium">{game.names?.international}</div>
-            <div className="text-sm text-gray-600">
-              Released: {game.released ?? "n/a"}
-            </div>
+          <li key={game.id}>
+            <button
+              className="w-full text-left p-3 border rounded hover:bg-gray-200"
+              onClick={() => setSelectedGame(game)}
+            >
+              <div className="font-medium">{game.names?.international}</div>
+              <div className="text-sm text-gray-600">
+                Released: {game.released ?? "n/a"}
+              </div>
+            </button>
           </li>
         ))}
       </ul>
