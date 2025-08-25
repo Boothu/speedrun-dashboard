@@ -50,7 +50,6 @@ function App() {
 
       // Update games array
       setGames(results);
-      console.log(games)
     } catch (e) {
       console.error(e);
       setError("Couldn't fetch games. Try a different search.");
@@ -72,6 +71,7 @@ function App() {
           // Update 'query' with entered text
           onChange={(e) => setQuery(e.target.value)}
         />
+        {/* Calls handle search on click, disabled while loading */}
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60"
           onClick={handleSearch}
@@ -80,6 +80,19 @@ function App() {
           {loading ? "Searching..." : "Search"}
         </button>
       </div>
+      {/* If 'error' is truthy then display error message */}
+      {error && <div className="mb-3 text-red-600">{error}</div>}
+      <ul className="space-y-2">
+        {/* Map each game in the games array to its own box showing name and release date */}
+        {games.map((game) => (
+          <li key={game.id} className="p-3 border rounded">
+            <div className="font-medium">{game.names?.international}</div>
+            <div className="text-sm text-gray-600">
+              Released: {game.released ?? "n/a"}
+            </div>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
