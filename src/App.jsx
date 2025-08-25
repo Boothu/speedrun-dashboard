@@ -37,9 +37,13 @@ function App() {
       // Make request to API
       const response = await fetch(url);
 
+      // Most common error - log a message specifically for it
+      if (response.status === 420) {
+        throw new Error("Too many requests - please wait a moment before searching again.");
+      }
       // Throw error if request unsuccessful
       if (!response.ok) {
-        throw new Error(response.status);
+        throw new Error(`Request failed with status ${response.status} ${response.statusText}`);
       }
 
       // Get response data in JSON form
@@ -52,7 +56,7 @@ function App() {
       setGames(results);
     } catch (e) {
       console.error(e);
-      setError("Couldn't fetch games. Try a different search.");
+      setError(`Failed to fetch games: ${e.message}`);
       // Stop loading as search has finished
     } finally {
       setLoading(false);
@@ -82,6 +86,12 @@ function App() {
       </div>
       {/* If 'error' is truthy then display error message */}
       {error && <div className="mb-3 text-red-600">{error}</div>}
+      {/* If search is complete and no games found, display message */}
+      {!loading && !error && games.length === 0 && (
+        <p className="mb-3 text-gray-600">
+          No games found. Try a different search.
+        </p>
+      )}
       <ul className="space-y-2">
         {/* Map each game in the games array to its own box showing name and release date */}
         {games.map((game) => (
