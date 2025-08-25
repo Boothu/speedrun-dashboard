@@ -17,6 +17,9 @@ function App() {
   // Set to error message if something goes wrong
   const [error, setError] = useState("");
 
+  // Track if a search has been performed
+  const [hasSearched, setHasSearched] = useState(false);
+
   // Fetch games from speedrun.com based on current 'query'
   async function handleSearch() {
     const q = query.trim();
@@ -24,6 +27,7 @@ function App() {
     if (!q) return;
 
     setLoading(true);
+    setHasSearched(true);
     // Clear anything that may remain from previous searches
     setError("");
     setGames([]);
@@ -74,6 +78,11 @@ function App() {
           value={query}
           // Update 'query' with entered text
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
         />
         {/* Calls handle search on click, disabled while loading */}
         <button
@@ -87,7 +96,7 @@ function App() {
       {/* If 'error' is truthy then display error message */}
       {error && <div className="mb-3 text-red-600">{error}</div>}
       {/* If search is complete and no games found, display message */}
-      {!loading && !error && games.length === 0 && (
+      {!loading && !error && games.length === 0 && hasSearched && (
         <p className="mb-3 text-gray-600">
           No games found. Try a different search.
         </p>
