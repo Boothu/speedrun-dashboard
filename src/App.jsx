@@ -117,15 +117,33 @@ function App() {
             <button
               className={"w-full text-left p-3 hover:bg-gray-200"}
               onClick={async () => {
+                // If user clicks a game after already selecting it, it will be deselected
+                if (selectedGame?.id === game.id) {
+                  setSelectedGame(null);
+                  setCategories([]);
+                  setSelectedCategory(null);
+                  return;
+                }
                 setCategories([]);
                 setSelectedGame(game);
 
                 setCategoriesLoading(true);
-                const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
-                const json = await response.json();
-                setCategories(json.data);
-                setSelectedCategory(null);
-                setCategoriesLoading(false);
+                try {
+                  const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
+                  // Throw error if request unsuccessful
+                  if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status} ${response.statusText}`);
+                  }
+                  const json = await response.json();
+                  setCategories(json.data);
+                  setSelectedCategory(null);
+                } catch (e) {
+                  console.error(e);
+                  setError(`Failed to fetch categories: ${e.message}`);
+                  setCategories([]);
+                } finally {
+                  setCategoriesLoading(false);
+                }
               }}
             >
               <div className="font-medium">{game.names?.international}</div>
