@@ -23,9 +23,10 @@ function App() {
   // Track game selected from list generated after search
   const [selectedGame, setSelectedGame] = useState(null);
 
-  // Track a games categories and the selected category
+  // Track a games categories, the selected category and if categories are loading
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
 
   // Fetch games from speedrun.com based on current 'query'
   async function handleSearch() {
@@ -116,11 +117,15 @@ function App() {
             <button
               className={"w-full text-left p-3 hover:bg-gray-200"}
               onClick={async () => {
+                setCategories([]);
                 setSelectedGame(game);
+
+                setCategoriesLoading(true);
                 const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
                 const json = await response.json();
                 setCategories(json.data);
                 setSelectedCategory(null);
+                setCategoriesLoading(false);
               }}
             >
               <div className="font-medium">{game.names?.international}</div>
@@ -129,18 +134,22 @@ function App() {
               </div>
             </button>
             {/* If this game is selected, show its categories and let them be selected */}
-            {selectedGame?.id === game.id && categories.length > 0 && (
+            {selectedGame?.id === game.id && (
               <div className="p-3 flex flex-wrap gap-2 border-t">
-                {categories.map((c) => (
-                  <button
-                    key={c.id}
-                    className={`px-3 py-1 border rounded text-sm hover:bg-gray-200 ${selectedCategory?.id === c.id ? "bg-blue-500 text-white" : ""
-                      }`}
-                    onClick={() => setSelectedCategory(c)}
-                  >
-                    {c.name}
-                  </button>
-                ))}
+                {/* Display categories loading text */}
+                {categoriesLoading && <p className="text-sm text-gray-600">Loading categories...</p>}
+                {/* When finished loading display categories */}
+                {!categoriesLoading && categories.length > 0 &&
+                  categories.map((c) => (
+                    <button
+                      key={c.id}
+                      className={`px-3 py-1 border rounded text-sm hover:bg-gray-200 ${selectedCategory?.id === c.id ? "bg-blue-500 text-white" : ""
+                        }`}
+                      onClick={() => setSelectedCategory(c)}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
               </div>
             )}
           </li>
