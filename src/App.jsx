@@ -39,6 +39,10 @@ function App() {
     // Clear anything that may remain from previous searches
     setError("");
     setGames([]);
+    setSelectedGame(null);
+    setCategories([]);
+    setSelectedCategory(null);
+    setCategoriesLoading(false);
 
     try {
       // Use entered query ('q') in search using the API
@@ -115,7 +119,7 @@ function App() {
           <li key={game.id} className="border rounded">
             {/* If game is clicked, set it as selected game and load categories */}
             <button
-              className={"w-full text-left p-3 hover:bg-gray-200"}
+              className={"w-full text-left p-3 hover:bg-gray-200 rounded"}
               onClick={async () => {
                 // If user clicks a game after already selecting it, it will be deselected
                 if (selectedGame?.id === game.id) {
@@ -161,8 +165,7 @@ function App() {
                   categories.map((c) => (
                     <button
                       key={c.id}
-                      className={`px-3 py-1 border rounded text-sm hover:bg-gray-200 ${selectedCategory?.id === c.id ? "bg-blue-500 text-white" : ""
-                        }`}
+                      className={`px-3 py-1 border rounded text-sm ${selectedCategory?.id === c.id ? "bg-blue-500 text-white hover:bg-blue-600" : "hover:bg-gray-200"}`}
                       onClick={() => setSelectedCategory(c)}
                     >
                       {c.name}
