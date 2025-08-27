@@ -3,6 +3,7 @@ import { useState } from "react";
 
 // App component is what returns the UI
 function App() {
+  // STATE VARIABLES
   // useState lets this component have state (memory)
   // Make a state variable 'query' and a setter 'setQuery'
   // Calling 'setQuery(...)' updates 'query' and tells React to re-render the UI
@@ -28,6 +29,14 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
 
+  // State for leaderboard
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [lbLoading, setLbLoading] = useState(false);
+
+
+
+
+  // FUNCTIONS
   // Fetch games from speedrun.com based on current 'query'
   async function handleSearch() {
     const q = query.trim();
@@ -79,11 +88,16 @@ function App() {
     }
   }
 
+
+
+
+  // JSX / UI
   return (
     <main className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Speedrun Records Dashboard</h1>
 
       <div className="flex gap-2 mb-4">
+        {/* INPUT BOX */}
         <input
           className="flex-1 border rounded px-3 py-2"
           placeholder="Search for a game"
@@ -96,6 +110,8 @@ function App() {
             }
           }}
         />
+
+        {/* SEARCH BUTTON */}
         {/* Calls handle search on click, disabled while loading */}
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60"
@@ -105,6 +121,8 @@ function App() {
           {loading ? "Searching..." : "Search"}
         </button>
       </div>
+
+      {/* ERROR MESSAGES */}
       {/* If 'error' is truthy then display error message */}
       {error && <div className="mb-3 text-red-600">{error}</div>}
       {/* If search is complete and no games found, display message */}
@@ -113,11 +131,15 @@ function App() {
           No games found. Try a different search.
         </p>
       )}
+
+      {/* GAMES LIST */}
       <ul className="space-y-2">
         {/* Map each game in the games array to its own box showing name and release date */}
         {games.map((game) => (
           <li key={game.id} className="border rounded">
             {/* If game is clicked, set it as selected game and load categories */}
+
+            {/* GAME */}
             <button
               className={"w-full text-left p-3 hover:bg-gray-200 rounded"}
               onClick={async () => {
@@ -131,6 +153,7 @@ function App() {
                 setCategories([]);
                 setSelectedGame(game);
 
+                // Fetch categories
                 setCategoriesLoading(true);
                 try {
                   const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
@@ -155,6 +178,8 @@ function App() {
                 Released: {game.released ?? "n/a"}
               </div>
             </button>
+
+            {/* CATEGORIES DISPLAY */}
             {/* If this game is selected, show its categories and let them be selected */}
             {selectedGame?.id === game.id && (
               <div className="p-3 flex flex-wrap gap-2 border-t">
