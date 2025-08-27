@@ -23,6 +23,10 @@ function App() {
   // Track game selected from list generated after search
   const [selectedGame, setSelectedGame] = useState(null);
 
+  // Track a games categories and the selected category
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   // Fetch games from speedrun.com based on current 'query'
   async function handleSearch() {
     const q = query.trim();
@@ -107,16 +111,38 @@ function App() {
       <ul className="space-y-2">
         {/* Map each game in the games array to its own box showing name and release date */}
         {games.map((game) => (
-          <li key={game.id}>
+          <li key={game.id} className="border rounded">
+            {/* If game is clicked, set it as selected game and load categories */}
             <button
-              className="w-full text-left p-3 border rounded hover:bg-gray-200"
-              onClick={() => setSelectedGame(game)}
+              className={"w-full text-left p-3 hover:bg-gray-200"}
+              onClick={async () => {
+                setSelectedGame(game);
+                const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
+                const json = await response.json();
+                setCategories(json.data);
+                setSelectedCategory(null);
+              }}
             >
               <div className="font-medium">{game.names?.international}</div>
               <div className="text-sm text-gray-600">
                 Released: {game.released ?? "n/a"}
               </div>
             </button>
+            {/* If this game is selected, show its categories and let them be selected */}
+            {selectedGame?.id === game.id && categories.length > 0 && (
+              <div className="p-3 flex flex-wrap gap-2 border-t">
+                {categories.map((c) => (
+                  <button
+                    key={c.id}
+                    className={`px-3 py-1 border rounded text-sm hover:bg-gray-200 ${selectedCategory?.id === c.id ? "bg-blue-500 text-white" : ""
+                      }`}
+                    onClick={() => setSelectedCategory(c)}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </li>
         ))}
       </ul>
