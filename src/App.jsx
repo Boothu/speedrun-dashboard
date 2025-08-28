@@ -1,5 +1,5 @@
 // Allows for storing and updating state in a component
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // App component is what returns the UI
 function App() {
@@ -52,6 +52,8 @@ function App() {
     setCategories([]);
     setSelectedCategory(null);
     setCategoriesLoading(false);
+    setLeaderboard([]);
+    setLbLoading(false);
 
     try {
       // Use entered query ('q') in search using the API
@@ -87,6 +89,48 @@ function App() {
       setLoading(false);
     }
   }
+
+  // useEffect is used so any time selectedGame or selectedCategory changes, all this code inside it will run
+  useEffect(() => {
+    // Ensure both a game and category have been selected - else return
+    if (!selectedGame || !selectedCategory) {
+      setLeaderboard([]);
+      setLbLoading(false);
+      return;
+    }
+
+    // Fetch leaderboard based on current 'selectedCategory'
+    async function getLeaderboard() {
+      setLbLoading(true);
+      setLeaderboard([]);
+
+      try {
+        const url = `https://www.speedrun.com/api/v1/leaderboards/${selectedGame.id}/category/${selectedCategory.id}?top=10&embed=players`;
+        const response = await fetch(url);
+        // Throw error if request unsuccessful
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status} ${response.statusText}`);
+        }
+        const json = await response.json();
+
+        // Ensure there is data for runs and players
+        const runs = (json.data && json.data.runs) ? json.data.runs : [];
+        const embeddedPlayers = (json.data && json.data.players && json.data.players.data) ? json.data.players.data : [];
+
+        // Map data into rows
+        const rows = runs.map((r) => {
+        });
+        setLeaderboard(rows);
+      } catch (e) {
+        console.error(e);
+        setError(`Failed to fetch leaderboard: ${e.message}`);
+      } finally {
+        setLbLoading(false);
+      }
+    }
+    // Now actually run 'getLeaderboard' with current selected game and category
+    getLeaderboard();
+  }, [selectedGame, selectedCategory]);
 
 
 
