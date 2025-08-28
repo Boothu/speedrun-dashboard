@@ -90,6 +90,7 @@ function App() {
     }
   }
 
+
   // useEffect is used so any time selectedGame or selectedCategory changes, all this code inside it will run
   useEffect(() => {
     // Ensure both a game and category have been selected - else return
@@ -215,6 +216,9 @@ function App() {
                   return;
                 }
                 setCategories([]);
+                setLeaderboard([]);
+                setLbLoading(false);
+                setSelectedCategory(null);
                 setSelectedGame(game);
 
                 // Fetch categories
@@ -226,7 +230,8 @@ function App() {
                     throw new Error(`Request failed with status ${response.status} ${response.statusText}`);
                   }
                   const json = await response.json();
-                  setCategories(json.data);
+                  // Filter out per-level categories
+                  setCategories((json.data || []).filter(c => c.type === "per-game"));
                   setSelectedCategory(null);
                 } catch (e) {
                   console.error(e);
@@ -249,6 +254,12 @@ function App() {
               <div className="p-3 flex flex-wrap gap-2 border-t">
                 {/* Display categories loading text */}
                 {categoriesLoading && <p className="text-sm text-gray-600">Loading categories...</p>}
+                {/* Show message if there are no categories */}
+                {!categoriesLoading && categories.length === 0 && (
+                  <p className="text-sm text-gray-600">
+                    No categories found for this game.
+                  </p>
+                )}
                 {/* When finished loading display categories */}
                 {!categoriesLoading && categories.length > 0 &&
                   categories.map((c) => (
@@ -260,6 +271,64 @@ function App() {
                       {c.name}
                     </button>
                   ))}
+              </div>
+            )}
+
+            {/* LEADERBOARD DISPLAY */}
+            {/* Only display in selected games box & ensure category has been selected */}
+            {selectedGame?.id === game.id && selectedCategory && (
+              <div className="p-3 border-t">
+                <h3 className="font-semibold mb-2">
+                  Leaderboard: {selectedCategory.name}
+                </h3>
+
+                {lbLoading && <p className="text-sm text-gray-600">Loading leaderboard…</p>}
+
+                {/* If finished loading and there are no errors display leaderboard */}
+                {!lbLoading && !error && leaderboard.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left border-b">
+                          <th className="py-2 pr-3">Place</th>
+                          <th className="py-2 pr-3">Runner</th>
+                          <th className="py-2 pr-3">Time (s)</th>
+                          <th className="py-2 pr-3">Date</th>
+                          <th className="py-2 pr-3">Link</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Map data to respective row */}
+                        {leaderboard.map((row, i) => (
+                          <tr key={i} className="border-b last:border-0">
+                            <td className="py-2 pr-3">{i + 1}</td>
+                            <td className="py-2 pr-3">{row.runner}</td>
+                            <td className="py-2 pr-3">{row.seconds ?? "—"}</td>
+                            <td className="py-2 pr-3">{row.date || "—"}</td>
+                            <td className="py-2 pr-3">
+                              {row.video ? (
+                                <a
+                                  className="text-blue-600 hover:underline"
+                                  href={row.video}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Video
+                                </a>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {!lbLoading && !error && leaderboard.length === 0 && (
+                  <p className="text-sm text-gray-600">No leaderboard entries found.</p>
+                )}
               </div>
             )}
           </li>
