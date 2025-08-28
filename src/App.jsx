@@ -117,8 +117,28 @@ function App() {
         const runs = (json.data && json.data.runs) ? json.data.runs : [];
         const embeddedPlayers = (json.data && json.data.players && json.data.players.data) ? json.data.players.data : [];
 
+        // Helper to find a players display name in the embedded array - guards in place incase data is missing
+        function getPlayerName(p) {
+          if (!p) return "Unknown";
+          if (p.rel === "guest") return p.name || "Guest";
+          if (p.rel === "user") {
+            const match = embeddedPlayers.find(x => x.id === p.id);
+            return (match && (match.names?.international || match.name)) || "User";
+          }
+          return "Unknown";
+        }
+
         // Map data into rows
         const rows = runs.map((r) => {
+          const place = r.place;
+          const run = r.run;
+          const first = run && run.players ? run.players[0] : null;
+          const runner = getPlayerName(first);
+          const seconds = (run && run.times) ? run.times.primary_t : null;
+          const date = run ? run.date : "";
+          const video = (run && run.videos && run.videos.links && run.videos.links[0]) ? run.videos.links[0].uri : (run ? run.weblink : "");
+
+          return { place, runner, seconds, date, video };
         });
         setLeaderboard(rows);
       } catch (e) {
