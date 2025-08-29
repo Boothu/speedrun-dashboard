@@ -1,5 +1,5 @@
-// Allows for storing and updating state in a component
 import { useState, useEffect } from "react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 // App component is what returns the UI
 function App() {
@@ -156,7 +156,7 @@ function App() {
 
   // Helper function to convert time from seconds to (HH:)MM:SS
   function formatTime(seconds) {
-    if (!seconds) return "No time recorded";
+    if (!seconds) return "0";
     // Calculate hours/mins/seconds and floor to get whole numbers
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -172,6 +172,13 @@ function App() {
       return `${mins}:${secs.toString().padStart(2, "0")}`;
     }
   }
+
+
+  // Copies and sorts leaderboard manually which fixes bug where a runner with more 
+  // than 1 time in leaderboard would appear in the wrong place
+  const sorted = [...leaderboard].sort((a, b) => {
+    return (a.seconds) - (b.seconds);
+  });
 
 
 
@@ -312,14 +319,14 @@ function App() {
                         <tr className="text-left border-b">
                           <th className="py-2 pr-3">Place</th>
                           <th className="py-2 pr-3">Runner</th>
-                          <th className="py-2 pr-3">Time (s)</th>
+                          <th className="py-2 pr-3">Time</th>
                           <th className="py-2 pr-3">Date</th>
                           <th className="py-2 pr-3">Link</th>
                         </tr>
                       </thead>
                       <tbody>
                         {/* Map data to respective row */}
-                        {leaderboard.map((row, i) => (
+                        {sorted.map((row, i) => (
                           <tr key={i} className="border-b last:border-0">
                             <td className="py-2 pr-3">{i + 1}</td>
                             <td className="py-2 pr-3">{row.runner}</td>
@@ -348,6 +355,32 @@ function App() {
 
                 {!lbLoading && !error && leaderboard.length === 0 && (
                   <p className="text-sm text-gray-600">No leaderboard entries found.</p>
+                )}
+
+                {/* CHART DISPLAY */}
+                {!lbLoading && leaderboard.length > 1 && (
+                  // Ensures labels all display neatly and that chart doesnt appear 
+                  // squashed even when theres only a few rows
+                  <div className="my-4" style={{ height: `${Math.max(leaderboard.length * 30, 120)}px` }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        layout="vertical"
+                        // Adding number in front of runners name will allow the chart to differentiate 
+                        // between multiple runs from the same runner, ensuring the correct time is displayed
+                        data={sorted.map((r, i) => ({ name: `${i + 1}. ${r.runner} `, time: r.seconds || 0 }))}>
+                        <XAxis type="number" tickFormatter={(v) => formatTime(v)} />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          width={160}
+                          tick={{ fontSize: 10 }}
+                        />
+                        {/* Shows time when hovering over bars */}
+                        <Tooltip formatter={(value) => [formatTime(value), "Time"]} />
+                        <Bar dataKey="time" barSize={18} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </div>
             )}
