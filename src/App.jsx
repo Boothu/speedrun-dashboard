@@ -154,6 +154,26 @@ function App() {
   }, [selectedGame, selectedCategory]);
 
 
+  // Helper function to convert time from seconds to (HH:)MM:SS
+  function formatTime(seconds) {
+    if (!seconds) return "No time recorded";
+    // Calculate hours/mins/seconds and floor to get whole numbers
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    // If run is long enough to include hours include HH:
+    if (hrs > 0) {
+      // 'padStart' is used to add a leading 0 (e.g. 1:5:3 becomes 1:05:03)
+      return `${hrs}:${mins.toString().padStart(2, "0")}:${secs
+        .toString()
+        .padStart(2, "0")}`;
+    } else {
+      return `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
+  }
+
+
 
 
   // JSX / UI
@@ -282,7 +302,7 @@ function App() {
                   Leaderboard: {selectedCategory.name}
                 </h3>
 
-                {lbLoading && <p className="text-sm text-gray-600">Loading leaderboard…</p>}
+                {lbLoading && <p className="text-sm text-gray-600">Loading leaderboard...</p>}
 
                 {/* If finished loading and there are no errors display leaderboard */}
                 {!lbLoading && !error && leaderboard.length > 0 && (
@@ -303,8 +323,8 @@ function App() {
                           <tr key={i} className="border-b last:border-0">
                             <td className="py-2 pr-3">{i + 1}</td>
                             <td className="py-2 pr-3">{row.runner}</td>
-                            <td className="py-2 pr-3">{row.seconds ?? "—"}</td>
-                            <td className="py-2 pr-3">{row.date || "—"}</td>
+                            <td className="py-2 pr-3">{formatTime(row.seconds)}</td>
+                            <td className="py-2 pr-3">{row.date || ""}</td>
                             <td className="py-2 pr-3">
                               {row.video ? (
                                 <a
@@ -316,7 +336,7 @@ function App() {
                                   Video
                                 </a>
                               ) : (
-                                "—"
+                                ""
                               )}
                             </td>
                           </tr>
