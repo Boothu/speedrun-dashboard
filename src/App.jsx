@@ -185,208 +185,217 @@ function App() {
 
   // JSX / UI
   return (
-    <main className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Speedrun Records Dashboard</h1>
+    <main className="min-h-screen bg-gray-100 px-4">
+      <div className="mx-auto max-w-2xl py-8">
+        <div className="rounded-lg bg-white border p-5">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Speedrun Records Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Search for a game and view the top speedruns
+          </p>
+          <br />
 
-      <div className="flex gap-2 mb-4">
-        {/* INPUT BOX */}
-        <input
-          className="flex-1 border rounded px-3 py-2"
-          placeholder="Search for a game"
-          value={query}
-          // Update 'query' with entered text
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSearch();
-            }
-          }}
-        />
-
-        {/* SEARCH BUTTON */}
-        {/* Calls handle search on click, disabled while loading */}
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60"
-          onClick={handleSearch}
-          disabled={loading}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
-      </div>
-
-      {/* ERROR MESSAGES */}
-      {/* If 'error' is truthy then display error message */}
-      {error && <div className="mb-3 text-red-600">{error}</div>}
-      {/* If search is complete and no games found, display message */}
-      {!loading && !error && games.length === 0 && hasSearched && (
-        <p className="mb-3 text-gray-600">
-          No games found. Try a different search.
-        </p>
-      )}
-
-      {/* GAMES LIST */}
-      <ul className="space-y-2">
-        {/* Map each game in the games array to its own box showing name and release date */}
-        {games.map((game) => (
-          <li key={game.id} className="border rounded">
-            {/* If game is clicked, set it as selected game and load categories */}
-
-            {/* GAME */}
-            <button
-              className={"w-full text-left p-3 hover:bg-gray-200 rounded"}
-              onClick={async () => {
-                // If user clicks a game after already selecting it, it will be deselected
-                if (selectedGame?.id === game.id) {
-                  setSelectedGame(null);
-                  setCategories([]);
-                  setSelectedCategory(null);
-                  return;
-                }
-                setCategories([]);
-                setLeaderboard([]);
-                setLbLoading(false);
-                setSelectedCategory(null);
-                setSelectedGame(game);
-
-                // Fetch categories
-                setCategoriesLoading(true);
-                try {
-                  const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
-                  // Throw error if request unsuccessful
-                  if (!response.ok) {
-                    throw new Error(`Request failed with status ${response.status} ${response.statusText}`);
-                  }
-                  const json = await response.json();
-                  // Filter out per-level categories
-                  setCategories((json.data || []).filter(c => c.type === "per-game"));
-                  setSelectedCategory(null);
-                } catch (e) {
-                  console.error(e);
-                  setError(`Failed to fetch categories: ${e.message}`);
-                  setCategories([]);
-                } finally {
-                  setCategoriesLoading(false);
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+            {/* INPUT BOX */}
+            <input
+              className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Search for a game"
+              value={query}
+              // Update 'query' with entered text
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
                 }
               }}
+            />
+
+            {/* SEARCH BUTTON */}
+            {/* Calls handle search on click, disabled while loading */}
+            <button
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
+              onClick={handleSearch}
+              disabled={loading}
             >
-              <div className="font-medium">{game.names?.international}</div>
-              <div className="text-sm text-gray-600">
-                Released: {game.released ?? "n/a"}
-              </div>
+              {loading ? "Searching..." : "Search"}
             </button>
+          </div>
 
-            {/* CATEGORIES DISPLAY */}
-            {/* If this game is selected, show its categories and let them be selected */}
-            {selectedGame?.id === game.id && (
-              <div className="p-3 flex flex-wrap gap-2 border-t">
-                {/* Display categories loading text */}
-                {categoriesLoading && <p className="text-sm text-gray-600">Loading categories...</p>}
-                {/* Show message if there are no categories */}
-                {!categoriesLoading && categories.length === 0 && (
-                  <p className="text-sm text-gray-600">
-                    No categories found for this game.
-                  </p>
-                )}
-                {/* When finished loading display categories */}
-                {!categoriesLoading && categories.length > 0 &&
-                  categories.map((c) => (
-                    <button
-                      key={c.id}
-                      className={`px-3 py-1 border rounded text-sm ${selectedCategory?.id === c.id ? "bg-blue-500 text-white hover:bg-blue-600" : "hover:bg-gray-200"}`}
-                      onClick={() => setSelectedCategory(c)}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
-              </div>
-            )}
+          {/* ERROR MESSAGES */}
+          {/* If 'error' is truthy then display error message */}
+          {error && <div className="mb-3 text-red-600">{error}</div>}
+          {/* If search is complete and no games found, display message */}
+          {!loading && !error && games.length === 0 && hasSearched && (
+            <p className="mb-3 text-gray-600">
+              No games found. Try a different search.
+            </p>
+          )}
 
-            {/* LEADERBOARD DISPLAY */}
-            {/* Only display in selected games box & ensure category has been selected */}
-            {selectedGame?.id === game.id && selectedCategory && (
-              <div className="p-3 border-t">
-                <h3 className="font-semibold mb-2">
-                  Leaderboard: {selectedCategory.name}
-                </h3>
+          {/* GAMES LIST */}
+          <ul className="space-y-2">
+            {/* Map each game in the games array to its own box showing name and release date */}
+            {games.map((game) => (
+              <li key={game.id} className="rounded-md border bg-white">
+                {/* If game is clicked, set it as selected game and load categories */}
 
-                {lbLoading && <p className="text-sm text-gray-600">Loading leaderboard...</p>}
+                {/* GAME */}
+                <button
+                  className={`w-full text-left rounded-md p-3 ${selectedGame?.id === game.id ? "bg-blue-50 border-blue-400" : "hover:bg-gray-50"}`}
+                  onClick={async () => {
+                    // If user clicks a game after already selecting it, it will be deselected
+                    if (selectedGame?.id === game.id) {
+                      setSelectedGame(null);
+                      setCategories([]);
+                      setSelectedCategory(null);
+                      return;
+                    }
+                    setCategories([]);
+                    setLeaderboard([]);
+                    setLbLoading(false);
+                    setSelectedCategory(null);
+                    setSelectedGame(game);
 
-                {/* If finished loading and there are no errors display leaderboard */}
-                {!lbLoading && !error && leaderboard.length > 0 && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-left border-b">
-                          <th className="py-2 pr-3">Place</th>
-                          <th className="py-2 pr-3">Runner</th>
-                          <th className="py-2 pr-3">Time</th>
-                          <th className="py-2 pr-3">Date</th>
-                          <th className="py-2 pr-3">Link</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Map data to respective row */}
-                        {sorted.map((row, i) => (
-                          <tr key={i} className="border-b last:border-0">
-                            <td className="py-2 pr-3">{i + 1}</td>
-                            <td className="py-2 pr-3">{row.runner}</td>
-                            <td className="py-2 pr-3">{formatTime(row.seconds)}</td>
-                            <td className="py-2 pr-3">{row.date || ""}</td>
-                            <td className="py-2 pr-3">
-                              {row.video ? (
-                                <a
-                                  className="text-blue-600 hover:underline"
-                                  href={row.video}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  Video
-                                </a>
-                              ) : (
-                                ""
-                              )}
-                            </td>
-                          </tr>
+                    // Fetch categories
+                    setCategoriesLoading(true);
+                    try {
+                      const response = await fetch(`https://www.speedrun.com/api/v1/games/${game.id}/categories?type=per-game`);
+                      // Throw error if request unsuccessful
+                      if (!response.ok) {
+                        throw new Error(`Request failed with status ${response.status} ${response.statusText}`);
+                      }
+                      const json = await response.json();
+                      // Filter out per-level categories
+                      setCategories((json.data || []).filter(c => c.type === "per-game"));
+                      setSelectedCategory(null);
+                    } catch (e) {
+                      console.error(e);
+                      setError(`Failed to fetch categories: ${e.message}`);
+                      setCategories([]);
+                    } finally {
+                      setCategoriesLoading(false);
+                    }
+                  }}
+                >
+                  <div className="font-medium text-gray-800">{game.names?.international}</div>
+                  <div className="text-xs text-gray-500">
+                    Released: {game.released ?? "n/a"}
+                  </div>
+                </button>
+
+                {/* CATEGORIES DISPLAY */}
+                {/* If this game is selected, show its categories and let them be selected */}
+                {selectedGame?.id === game.id && (
+                  <div className="p-3 border-t">
+                    <div className="flex flex-wrap gap-2">
+                      {/* Display categories loading text */}
+                      {categoriesLoading && <p className="text-sm text-gray-600">Loading categories...</p>}
+                      {/* Show message if there are no categories */}
+                      {!categoriesLoading && categories.length === 0 && (
+                        <p className="text-sm text-gray-600">
+                          No categories found for this game.
+                        </p>
+                      )}
+                      {/* When finished loading display categories */}
+                      {!categoriesLoading && categories.length > 0 &&
+                        categories.map((c) => (
+                          <button
+                            key={c.id}
+                            className={`rounded-md border px-2.5 py-1 text-xs ${selectedCategory?.id === c.id
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                              }`} onClick={() => setSelectedCategory(c)}
+                          >
+                            {c.name}
+                          </button>
                         ))}
-                      </tbody>
-                    </table>
+                    </div>
                   </div>
                 )}
 
-                {!lbLoading && !error && leaderboard.length === 0 && (
-                  <p className="text-sm text-gray-600">No leaderboard entries found.</p>
-                )}
+                {/* LEADERBOARD DISPLAY */}
+                {/* Only display in selected games box & ensure category has been selected */}
+                {selectedGame?.id === game.id && selectedCategory && (
+                  <div className="p-3 border-t">
+                    <h3 className="font-semibold mb-2">
+                      Leaderboard: {selectedCategory.name}
+                    </h3>
 
-                {/* CHART DISPLAY */}
-                {!lbLoading && leaderboard.length > 1 && (
-                  // Ensures labels all display neatly and that chart doesnt appear 
-                  // squashed even when theres only a few rows
-                  <div className="my-4" style={{ height: `${Math.max(leaderboard.length * 30, 120)}px` }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        layout="vertical"
-                        // Adding number in front of runners name will allow the chart to differentiate 
-                        // between multiple runs from the same runner, ensuring the correct time is displayed
-                        data={sorted.map((r, i) => ({ name: `${i + 1}. ${r.runner} `, time: r.seconds || 0 }))}>
-                        <XAxis type="number" tickFormatter={(v) => formatTime(v)} />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          width={160}
-                          tick={{ fontSize: 10 }}
-                        />
-                        {/* Shows time when hovering over bars */}
-                        <Tooltip formatter={(value) => [formatTime(value), "Time"]} />
-                        <Bar dataKey="time" barSize={18} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {lbLoading && <p className="text-sm text-gray-600">Loading leaderboard...</p>}
+
+                    {/* If finished loading and there are no errors display leaderboard */}
+                    {!lbLoading && !error && leaderboard.length > 0 && (
+                      <div className="overflow-x-auto border rounded-md">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left bg-gray-100">
+                              <th className="py-2 px-3 text-sm font-semibold text-gray-700">Place</th>
+                              <th className="py-2 pr-3">Runner</th>
+                              <th className="py-2 pr-3">Time</th>
+                              <th className="py-2 pr-3">Date</th>
+                              <th className="py-2 pr-3">Link</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {/* Map data to respective row */}
+                            {sorted.map((row, i) => (
+                              <tr key={i} className="border-t hover:bg-gray-50">
+                                <td className="py-2 px-3 text-sm text-gray-800">{i + 1}</td>
+                                <td className="py-2 pr-3 text-sm text-gray-800">{row.runner}</td>
+                                <td className="py-2 pr-3 text-sm text-gray-800">{formatTime(row.seconds)}</td>
+                                <td className="py-2 pr-3 text-sm text-gray-800">{row.date || ""}</td>
+                                <td className="py-2 pr-3 text-sm text-gray-800">
+                                  {row.video ? (
+                                    <a
+                                      className="text-blue-600 hover:underline text-sm"
+                                      href={row.video}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      Video
+                                    </a>
+                                  ) : (
+                                    ""
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {!lbLoading && !error && leaderboard.length === 0 && (
+                      <p className="text-sm text-gray-600">No leaderboard entries found.</p>
+                    )}
+
+                    {/* CHART DISPLAY */}
+                    {!lbLoading && leaderboard.length > 1 && (
+                      // Ensures labels all display neatly and that chart doesnt appear 
+                      // squashed even when theres only a few rows
+                      <div className="my-4 rounded-md border p-3 bg-white" style={{ height: `${Math.max(leaderboard.length * 37, 140)}px` }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            layout="vertical"
+                            // Adding number in front of runners name will allow the chart to differentiate 
+                            // between multiple runs from the same runner, ensuring the correct time is displayed
+                            data={sorted.map((r, i) => ({ name: `${i + 1}. ${r.runner} `, time: r.seconds || 0 }))}>
+                            <XAxis type="number" domain={[0, 'dataMax']} tickFormatter={(v) => formatTime(v)} />
+                            <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 10 }} />
+                            {/* Shows time when hovering over bars */}
+                            <Tooltip formatter={(value) => [formatTime(value), "Time"]} />
+                            <Bar dataKey="time" barSize={18} fill="#3B82F6" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </main>
   );
 }
