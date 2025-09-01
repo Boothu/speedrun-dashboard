@@ -15,3 +15,6 @@ A data-visualisation web app that fetches and displays speedrun records from the
 
 ## Site Link
 [boothu.github.io/speedrun-dashboard/](https://boothu.github.io/speedrun-dashboard/)
+
+## Preview
+<img src="https://raw.githubusercontent.com/Boothu/boothu.github.io/main/images/SD%20PREVIEW.png" alt="Preview" width="700">
